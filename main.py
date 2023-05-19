@@ -1,6 +1,8 @@
+import asyncio
+import itertools
+import random
 import string
 import json
-import itertools
 
 class nameSniper:
     def __init__(self):
@@ -8,24 +10,50 @@ class nameSniper:
         self.token = self.config.get("token")
         self.min_length = self.config.get("min_length")
         self.all_characters = list(string.ascii_lowercase + string.digits + "._")
+        self.generated_strings = asyncio.Queue()
         assert self.token or self.min_length, "Missing arguments"
         
     @property
     def _config(self):
         with open("config.json", "r") as f: return json.load(f)
     
-    def snipe(self):
+    async def check_username(self, username):
+        # Simulated check for username availability
+        name_used = False
+
+        if name_used:
+            print(f"Sniped Username: {username}")
+        else:
+            print(f"Already used: {username}")
+
+    async def generate_combinations(self):
+        min_length = self.config.get("min_length")
+        async for combination in self.async_combinations(self.all_characters, min_length):
+            yield ''.join(combination)
+
+    async def async_combinations(self, iterable, r):
+        pool = tuple(iterable)
+        n = len(pool)
+        indices = [0] * r
+        yield tuple(pool[i] for i in indices)
         while True:
-            random_string = [''.join(p) for p in itertools.product(self.all_characters, repeat=self.config.get("min_length"))]
-            for current_string in random_string:
-                # check if user_name is used
-                name_used = False
-                if name_used:
-                    return print(f"User {current_string} sniped")
-                else:
-                    print(f"Not avaible: {current_string}")
+            for i in reversed(range(r)):
+                if indices[i] != n - 1:
+                    break
+            else:
+                return
+            indices[i:] = [indices[i] + 1] * (r - i)
+            yield tuple(pool[i] for i in indices)
+
+    async def snipe(self):
+        while True:
+            tasks = []
+            async for current_string in self.generate_combinations():
+                tasks.append(asyncio.create_task(self.check_username(current_string)))
+                
+            await asyncio.gather(*tasks)
             self.config['min_length'] += 1
         
             
     
-nameSniper().snipe()
+asyncio.run(nameSniper().snipe())
