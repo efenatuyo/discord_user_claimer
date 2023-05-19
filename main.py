@@ -1,6 +1,4 @@
 import asyncio
-import itertools
-import random
 import string
 import json
 
