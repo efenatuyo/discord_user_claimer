@@ -9,7 +9,6 @@ class nameSniper:
         self.token = self.config.get("token")
         self.min_length = self.config.get("min_length")
         self.all_characters = list(string.ascii_lowercase + string.digits + "._")
-        self.generated_strings = asyncio.Queue()
         assert self.token or self.min_length, "Missing arguments"
         self.semaphore = asyncio.Semaphore(float("inf"))
         
