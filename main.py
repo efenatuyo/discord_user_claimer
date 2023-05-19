@@ -1,6 +1,7 @@
 import asyncio
 import string
 import json
+import itertools
 
 class nameSniper:
     def __init__(self):
@@ -10,6 +11,7 @@ class nameSniper:
         self.all_characters = list(string.ascii_lowercase + string.digits + "._")
         self.generated_strings = asyncio.Queue()
         assert self.token or self.min_length, "Missing arguments"
+        self.semaphore = asyncio.Semaphore(float("inf"))
         
     @property
     def _config(self):
